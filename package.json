@@ -1,0 +1,32 @@
+{
+  "name": "ago-sso",
+  "version": "0.0.1",
+  "description": "Proof of concept for SSO for AGO",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "jekyll serve --livereload",
+    "clean:dist": "rm -rf dist",
+    "copy:dist": "cp -r src/_site dist",
+    "build": "npm run clean:dist && jekyll build && npm run copy:dist",
+    "s3_deploy_stage": "aws s3 cp dist s3://sso-ago/dist --recursive",
+    "s3_deploy_prod": "aws s3 cp dist s3://sso-ago/dist --recursive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tnc-ca-geo/ago_sso.git"
+  },
+  "author": "Falk Schuetzenmeister",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tnc-ca-geo/ago_sso/issues"
+  },
+  "homepage": "",
+  "devDependencies": {
+    "eslint-config-google": "^0.9.1"
+  },
+  "dependencies": {
+    "eslint": "^4.19.1",
+    "jekyll": "^3.0.0-beta1"
+  }
+}
