@@ -4,7 +4,6 @@
   "description": "Proof of concept for SSO for AGO",
   "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "jekyll serve --livereload",
     "clean:dist": "rm -rf dist",
     "copy:dist": "cp -r src/_site dist",
