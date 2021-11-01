@@ -1,30 +1,21 @@
 // following this extremely simple example https://developers.arcgis.com/javascript/latest/display-a-map/
 require([
-  "esri/config",
   "esri/identity/IdentityManager",
-  "esri/layers/FeatureLayer",
+  "esri/layers/Layer",
   "esri/Map",
   "esri/portal/Portal",
   "esri/portal/PortalQueryParams",
   "esri/identity/OAuthInfo",
-  "esri/views/MapView",
-  "esri/widgets/Widget"],
+  "esri/views/MapView"],
   function (
-    esriConfig,
     esriId,
-    FeatureLayer,
+    Layer,
     Map,
     Portal,
     PortalQueryParams,
     OAuthInfo,
     MapView,
-    Widget
   ) {
-
-    esriConfig.apiKey =
-      "AAPKfadec5e5ca40451d9e7446d6dd0681afeWYBX8KLFJcTchbxr4DfFgQiomIPUkMn" +
-      "g7yzUiNVB8DUR4YclJV6MZayveosalIn";
-
     const info = new OAuthInfo({
       // Swap this ID out with registered application ID
       appId: "ephPh366b8TspMw6",
@@ -34,64 +25,61 @@ require([
       // authNamespace: "portal_oauth_inline",
       popup: false
     });
-
     esriId.registerOAuthInfos([info]);
-
-    // console.log(info.portalUrl);
 
     esriId
       .checkSignInStatus(info.portalUrl + "/sharing")
-      .then(() => { console.log("SIGNED IN"); })
+      .then(() => { addProtectedLayer(); })
       .catch(() => { console.log("NOT SIGNED IN"); });
 
-    esriId.getCredential(info.portalUrl + "/sharing");
+    esriId.getCredential(info.portalUrl); // + "/sharing");
 
-    // console.log(esriId);
+    function addProtectedLayer() {
 
-    const portal = new Portal();
-    portal.authMode = "immediate";
-    portal.load().then(() => {
-      console.log("PORTAL LOADED");
-      // Create query parameters for the portal search
+      const portal = new Portal();
+      // Setting authMode to immediate signs the user in once loaded
+      portal.authMode = "immediate";
 
-      const queryParams = new PortalQueryParams({
-        query: "owner:" + portal.user.username,
-        sortField: "numViews",
-        sortOrder: "desc",
-        num: 20});
+      // Once loaded, user is signed in
+      portal.load().then(() => {
+        // Create query parameters for the portal search
 
-      portal.queryItems(queryParams).then(() => {
-        console.log("LOADED")
-      });
-    });
+        const queryParams = new PortalQueryParams({
+          query: "title: NCCPs_and_HCPs"
+        })
+
+        portal.queryItems(queryParams).then((items) => {
+          const layer = Layer.fromPortalItem({
+            portalItem: items.results[0]
+          }).then((layer) => {
+            map.add(layer);
+          })
+        })
+      })
+    }
 
     const map = new Map({
       basemap: "arcgis-topographic"
     });
-
-    const protectedLayer = new FeatureLayer({
-      url:
-        "https://services.arcgis.com/F7DSX1DSNSiWmOqh/arcgis/rest/" +
-        "services/NCCPs_and_HCPs/FeatureServer"
-    });
-
-    // console.log(protectedLayer.url);
-
-    map.add(protectedLayer);
 
     const view = new MapView({
       map: map,
       center: [-119.45, 37.17],
       zoom: 7,
       container: "viewDiv",
-      constraints: {
-        snapToZoom: false
-      }
+      constraints: { snapToZoom: false }
     });
 
-    //const login = "<div>Login</div>";
-
-    view.ui.add("loginDialog", "top-right");
+    view.ui.add("addDialog", "top-right");
     view.ui.add("logoutDialog", "top-right");
 
+    document.getElementById("addDialog").addEventListener("click", () => {
+      addProtectedLayer();
+      window.location.reload();
+    });
+
+    document.getElementById("logoutDialog").addEventListener("click", () => {
+      esriId.destroyCredentials();
+      window.location.reload();
+    });
 });
